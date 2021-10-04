@@ -1,6 +1,6 @@
 let input;
 let inputValue = '';
-let tasksList = [];
+let tasksList = JSON.parse(localStorage.getItem('list')) || [];
 let beingEdited = false;
 
 window.onload = () => {
@@ -13,7 +13,8 @@ window.onload = () => {
             addBtn.click();
         }
     });
-    addBtn.addEventListener("click", addTask)
+    addBtn.addEventListener("click", addTask);
+    render();
 }
 
 updateValue = (e) => {
@@ -27,6 +28,7 @@ addTask = () => {
         });
         inputValue = '';
         input.value = '';
+        localStorage.setItem('list',JSON.stringify(tasksList));
         render();
     } else alert('Please enter text');
 }
@@ -81,6 +83,7 @@ render = () => {
                 });
                 task.replaceChild(newInput, taskText);
                 newInput.focus();
+                localStorage.setItem('list',JSON.stringify(tasksList));
             } else {
                 let inputText = task.getElementsByTagName('input')[1];
                 editBtn.innerText = 'edit';
@@ -91,6 +94,8 @@ render = () => {
                 newText.innerText = inputText.value;
                 singleTask.text = inputText.value;
                 task.replaceChild(newText, inputText);
+                localStorage.setItem('list',JSON.stringify(tasksList));
+                render();
             }
         };
         // delete button
@@ -104,13 +109,32 @@ render = () => {
         // appending task to container
         tasksContainer.appendChild(task);
     }); 
+
+    // clear all items button
+    if (tasksList.length) {
+        const clearAllBtn = document.createElement('button');
+        clearAllBtn.innerText = 'clear all';
+        clearAllBtn.type = 'button';
+        clearAllBtn.className = 'clearAll-btn';
+        clearAllBtn.onclick = () => clearAllTasks();
+        tasksContainer.appendChild(clearAllBtn);
+    }
+    
 }
 
 onChangeCheckbox = (id) => {
     tasksList[id].isChecked = !tasksList[id].isChecked;
+    localStorage.setItem('list',JSON.stringify(tasksList));
     render();
 }
 removeTask = (id) => {
     tasksList = tasksList.filter( (item, index) => id !== index);
+    localStorage.setItem('list',JSON.stringify(tasksList));
+    render();
+}
+clearAllTasks = () => {
+    console.log("cleat all");
+    tasksList = [];
+    localStorage.setItem('list',JSON.stringify(tasksList));
     render();
 }
