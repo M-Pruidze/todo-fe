@@ -59,6 +59,11 @@ button{
     text-align: left;
     word-break: break-all;
 }
+.task-text{
+    width: 50%;
+    text-align: left;
+    word-break: break-all;
+}
 .checked {
     text-decoration: line-through;
 }
