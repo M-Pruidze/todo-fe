@@ -13,7 +13,8 @@ window.onload = () => {
             addBtn.click();
         }
     });
-    addBtn.addEventListener("click", addTask)
+    addBtn.addEventListener("click", addTask);
+    render();
 }
 
 updateValue = (e) => {
@@ -91,6 +92,7 @@ render = () => {
                 newText.innerText = inputText.value;
                 singleTask.text = inputText.value;
                 task.replaceChild(newText, inputText);
+                render();
             }
         };
         // delete button
