@@ -21,7 +21,7 @@ window.onload = async () => {
         method: 'GET'
     })).json();
     tasksList = response;
-    
+
     render();
 }
 
@@ -73,62 +73,64 @@ addTask = async () => {
     } else alert('Please enter text');
 }
 render = () => {
-    console.log(`taskListrender`, tasksList)
     const tasksContainer = document.querySelector('.tasks-container');
     while (tasksContainer.firstChild) {
         tasksContainer.firstChild.remove();
     }
-    tasksList.map((singleTask, index) => {
-        const task = document.createElement('article');
-        task.id = `task-${index}`;
-        task.className = 'task-container';
+    if (tasksList.length) {
+        tasksList.map((singleTask, index) => {
+            const task = document.createElement('article');
+            task.id = `task-${index}`;
+            task.className = 'task-container';
 
-        // checkbox
-        const checkBox = document.createElement('input');
-        checkBox.type = 'checkbox';
-        checkBox.checked = singleTask.isChecked;
-        task.appendChild(checkBox);
-        checkBox.onchange = () => onChangeCheckbox(index);
+            // checkbox
+            const checkBox = document.createElement('input');
+            checkBox.type = 'checkbox';
+            checkBox.checked = singleTask.isChecked;
+            task.appendChild(checkBox);
+            checkBox.onchange = () => onChangeCheckbox(index);
 
-        // single task's text
-        const taskText = document.createElement('p');
-        taskText.innerText = singleTask.text;
-        taskText.className = singleTask.isChecked ? 'task-text checked' : 'task-text';
-        task.appendChild(taskText);
+            // single task's text
+            const taskText = document.createElement('p');
+            taskText.innerText = singleTask.text;
+            taskText.className = singleTask.isChecked ? 'task-text checked' : 'task-text';
+            task.appendChild(taskText);
 
-        // buttons' container
-        const btnContainer = document.createElement('div');
-        btnContainer.className = 'btn-container';
-        task.appendChild(btnContainer);
+            // buttons' container
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container';
+            task.appendChild(btnContainer);
 
-        // edit button
-        editBtn = document.createElement('button');
-        editBtn.innerText = 'edit';
-        editBtn.id = 'edit-btn';
-        btnContainer.appendChild(editBtn);
-        editBtn.onclick =  () => editTask(singleTask._id);
+            // edit button
+            editBtn = document.createElement('button');
+            editBtn.innerText = 'edit';
+            editBtn.id = 'edit-btn';
+            btnContainer.appendChild(editBtn);
+            editBtn.onclick =  () => editTask(singleTask._id);
 
-        // delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerText = 'delete';
-        deleteBtn.id = `${index}`;
-        deleteBtn.className = 'delete-btn';
-        btnContainer.appendChild(deleteBtn);
-        deleteBtn.onclick = () => removeTask(singleTask._id);
+            // delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerText = 'delete';
+            deleteBtn.id = `${index}`;
+            deleteBtn.className = 'delete-btn';
+            btnContainer.appendChild(deleteBtn);
+            deleteBtn.onclick = () => removeTask(singleTask._id);
 
-        // appending task to container
-        tasksContainer.appendChild(task);
+            // appending task to container
+            tasksContainer.appendChild(task);
     });
 
     // clear all items button
-    // if (tasksList.length) {
-    //     const clearAllBtn = document.createElement('button');
-    //     clearAllBtn.innerText = 'clear all';
-    //     clearAllBtn.type = 'button';
-    //     clearAllBtn.className = 'clearAll-btn';
-    //     clearAllBtn.onclick = () => clearAllTasks();
-    //     tasksContainer.appendChild(clearAllBtn);
-    // }
+    if (tasksList.length) {
+        const clearAllBtn = document.createElement('button');
+        clearAllBtn.innerText = 'clear all';
+        clearAllBtn.type = 'button';
+        clearAllBtn.className = 'clearAll-btn';
+        clearAllBtn.onclick = () => clearAllTasks();
+        tasksContainer.appendChild(clearAllBtn);
+    }
+    }
+
 }
 
 onChangeCheckbox = async (id) => {
@@ -165,8 +167,12 @@ removeTask = async (id) => {
     // localStorage.setItem('list',JSON.stringify(tasksList));
     render();
 }
-// clearAllTasks = () => {
-//     tasksList = [];
-//     // localStorage.setItem('list',JSON.stringify(tasksList));
-//     render();
-// }
+clearAllTasks = async () => {
+    const response = await fetch(`http://localhost:4000/task`, {
+        method: 'DELETE'
+    });
+    let result = await response.json();
+    tasksList = result;
+    // localStorage.setItem('list',JSON.stringify(tasksList));
+    render();
+}
