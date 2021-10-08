@@ -1,9 +1,12 @@
 let input;
 let inputValue = '';
-let tasksList = [];
+let tasksList = JSON.parse(localStorage.getItem('list')) || [];
+// let tasksList = [];
 let beingEdited = false;
+let editBtn;
+let editID = null;
 
-window.onload = () => {
+window.onload = async () => {
     input = document.getElementById('input');
     const addBtn = document.getElementById("add-btn");
     input.addEventListener('change',updateValue);
@@ -13,24 +16,73 @@ window.onload = () => {
             addBtn.click();
         }
     });
-    addBtn.addEventListener("click", addTask)
+    addBtn.addEventListener("click", addTask);
+
+    const response = await (await fetch('http://localhost:4000/task', {
+        method: 'GET'
+    })).json();
+    tasksList = response;
+    console.log(`tasksList`, tasksList)
+
+    render();
 }
 
 updateValue = (e) => {
     inputValue = e.target.value;
 }
-addTask = () => {
-    if (inputValue.trim()) {
-        tasksList.push({
-            text: inputValue,
-            isChecked: false
+addTask = async () => {
+    if (inputValue.trim() && !beingEdited) {
+        // tasksList.push({
+        //     text: inputValue,
+        //     isChecked: false,
+        // });
+
+        const resp = await fetch('http://localhost:4000/task', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+                text: inputValue,
+                isChecked: false
+            })
+        });
+        let result = await resp.json();
+        const {text, isChecked} = result;
+        tasksList.push({text, isChecked});
+
+        inputValue = '';
+        input.value = '';
+        // localStorage.setItem('list',JSON.stringify(tasksList));
+        render();
+    } else if (inputValue && beingEdited) {
+        const response = await fetch(`http://localhost:4000/task/${editID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+                text: inputValue,
+            })
+        });
+        let result = await response.json();
+
+        tasksList = tasksList.map(task => {
+            if (editID == task._id) return {...task, text: input.value, isChecked: task.isChecked};
+            return task;
         });
         inputValue = '';
         input.value = '';
+        editID = null;
+        beingEdited = false;
+        // localStorage.setItem('list',JSON.stringify(tasksList));
         render();
     } else alert('Please enter text');
 }
 render = () => {
+    console.log(`taskListrender`, tasksList)
     const tasksContainer = document.querySelector('.tasks-container');
     while (tasksContainer.firstChild) {
         tasksContainer.firstChild.remove();
@@ -59,58 +111,74 @@ render = () => {
         task.appendChild(btnContainer);
 
         // edit button
-        const editBtn = document.createElement('button');
+        editBtn = document.createElement('button');
         editBtn.innerText = 'edit';
         editBtn.id = 'edit-btn';
         btnContainer.appendChild(editBtn);
-        editBtn.onclick = () => {
-            beingEdited = !beingEdited;
-            if (beingEdited) {
-                editBtn.innerText = 'save';
-                checkBox.disabled = true;
-                deleteBtn.disabled = true;
-                let newInput = document.createElement('input');
-                newInput.type = 'text';
-                newInput.value = taskText.innerText;
-                newInput.className = 'edited-text';
-                newInput.addEventListener('keyup', (event) => {
-                    if (event.code === 'Enter') {
-                        event.preventDefault;
-                        editBtn.click();
-                    }
-                });
-                task.replaceChild(newInput, taskText);
-                newInput.focus();
-            } else {
-                let inputText = task.getElementsByTagName('input')[1];
-                editBtn.innerText = 'edit';
-                checkBox.disabled = false;
-                deleteBtn.disabled = false;
-                let newText = document.createElement('p');
-                newText.className = 'task-text';
-                newText.innerText = inputText.value;
-                singleTask.text = inputText.value;
-                task.replaceChild(newText, inputText);
-            }
-        };
+        editBtn.onclick =  () => editTask(singleTask._id);
+
         // delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.innerText = 'delete';
         deleteBtn.id = `${index}`;
         deleteBtn.className = 'delete-btn';
         btnContainer.appendChild(deleteBtn);
-        deleteBtn.onclick = () => removeTask(index);
+        deleteBtn.onclick = () => removeTask(singleTask._id);
 
         // appending task to container
         tasksContainer.appendChild(task);
-    }); 
+    });
+
+    // clear all items button
+    if (tasksList.length) {
+        const clearAllBtn = document.createElement('button');
+        clearAllBtn.innerText = 'clear all';
+        clearAllBtn.type = 'button';
+        clearAllBtn.className = 'clearAll-btn';
+        clearAllBtn.onclick = () => clearAllTasks();
+        tasksContainer.appendChild(clearAllBtn);
+    }
 }
 
-onChangeCheckbox = (id) => {
+onChangeCheckbox = async (id) => {
     tasksList[id].isChecked = !tasksList[id].isChecked;
+    // localStorage.setItem('list',JSON.stringify(tasksList));
+
+    const response = await fetch(`http://localhost:4000/task/${tasksList[id]._id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+            isChecked: tasksList[id].isChecked,
+        })
+    });
+    let result = await response.json();
     render();
 }
-removeTask = (id) => {
-    tasksList = tasksList.filter( (item, index) => id !== index);
+editTask = (id) => {
+    // const specificItem = tasksList.find((task,index) => index === id);
+    const specificItem = tasksList.find(task => id === task._id);
+    input.value = specificItem.text;
+    inputValue = specificItem.text;
+    editID = id;
+    beingEdited = true;
+    input.focus();
+}
+removeTask = async (id) => {
+    // tasksList = tasksList.filter( (item, index) => id !== index);
+    const response = await fetch(`http://localhost:4000/task/${id}`, {
+        method: 'DELETE'
+    });
+    let result = await response.json();
+    tasksList = tasksList.filter(item => id !== item._id);
+
+    // localStorage.setItem('list',JSON.stringify(tasksList));
     render();
 }
+// clearAllTasks = () => {
+//     tasksList = [];
+//     // localStorage.setItem('list',JSON.stringify(tasksList));
+//     render();
+// }
