@@ -73,6 +73,7 @@ addTask = async () => {
     } else alert('Please enter text');
 }
 render = () => {
+    console.log(`taskListrender`, tasksList)
     const tasksContainer = document.querySelector('.tasks-container');
     while (tasksContainer.firstChild) {
         tasksContainer.firstChild.remove();
