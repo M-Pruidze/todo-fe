@@ -1,7 +1,6 @@
 let input;
 let inputValue = '';
 let tasksList = JSON.parse(localStorage.getItem('list')) || [];
-// let tasksList = [];
 let beingEdited = false;
 let editBtn;
 let editID = null;
@@ -22,8 +21,7 @@ window.onload = async () => {
         method: 'GET'
     })).json();
     tasksList = response;
-    console.log(`tasksList`, tasksList)
-
+    
     render();
 }
 
@@ -32,11 +30,6 @@ updateValue = (e) => {
 }
 addTask = async () => {
     if (inputValue.trim() && !beingEdited) {
-        // tasksList.push({
-        //     text: inputValue,
-        //     isChecked: false,
-        // });
-
         const resp = await fetch('http://localhost:4000/task', {
             method: "POST",
             headers: {
@@ -49,14 +42,12 @@ addTask = async () => {
             })
         });
         let result = await resp.json();
-        const {text, isChecked} = result;
-        tasksList.push({text, isChecked});
-
+        tasksList.push(result);
         inputValue = '';
         input.value = '';
         // localStorage.setItem('list',JSON.stringify(tasksList));
         render();
-    } else if (inputValue && beingEdited) {
+    } else if (inputValue.trim() && beingEdited) {
         const response = await fetch(`http://localhost:4000/task/${editID}`, {
             method: 'PUT',
             headers: {
@@ -67,7 +58,7 @@ addTask = async () => {
                 text: inputValue,
             })
         });
-        let result = await response.json();
+        // let result = await response.json();
 
         tasksList = tasksList.map(task => {
             if (editID == task._id) return {...task, text: input.value, isChecked: task.isChecked};
@@ -82,7 +73,6 @@ addTask = async () => {
     } else alert('Please enter text');
 }
 render = () => {
-    console.log(`taskListrender`, tasksList)
     const tasksContainer = document.querySelector('.tasks-container');
     while (tasksContainer.firstChild) {
         tasksContainer.firstChild.remove();
@@ -130,14 +120,14 @@ render = () => {
     });
 
     // clear all items button
-    if (tasksList.length) {
-        const clearAllBtn = document.createElement('button');
-        clearAllBtn.innerText = 'clear all';
-        clearAllBtn.type = 'button';
-        clearAllBtn.className = 'clearAll-btn';
-        clearAllBtn.onclick = () => clearAllTasks();
-        tasksContainer.appendChild(clearAllBtn);
-    }
+    // if (tasksList.length) {
+    //     const clearAllBtn = document.createElement('button');
+    //     clearAllBtn.innerText = 'clear all';
+    //     clearAllBtn.type = 'button';
+    //     clearAllBtn.className = 'clearAll-btn';
+    //     clearAllBtn.onclick = () => clearAllTasks();
+    //     tasksContainer.appendChild(clearAllBtn);
+    // }
 }
 
 onChangeCheckbox = async (id) => {
@@ -158,7 +148,6 @@ onChangeCheckbox = async (id) => {
     render();
 }
 editTask = (id) => {
-    // const specificItem = tasksList.find((task,index) => index === id);
     const specificItem = tasksList.find(task => id === task._id);
     input.value = specificItem.text;
     inputValue = specificItem.text;
@@ -167,13 +156,11 @@ editTask = (id) => {
     input.focus();
 }
 removeTask = async (id) => {
-    // tasksList = tasksList.filter( (item, index) => id !== index);
     const response = await fetch(`http://localhost:4000/task/${id}`, {
         method: 'DELETE'
     });
     let result = await response.json();
     tasksList = tasksList.filter(item => id !== item._id);
-
     // localStorage.setItem('list',JSON.stringify(tasksList));
     render();
 }
