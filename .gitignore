@@ -1,2 +1,4 @@
 node_modules
 package-lock.json
+.env
+let input-backup.txt
