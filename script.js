@@ -17,7 +17,7 @@ window.onload = async () => {
     });
     addBtn.addEventListener("click", addTask);
 
-    const response = await (await fetch('http://localhost:4000/task', {
+    const response = await (await fetch('https://todo-back-mp.herokuapp.com/task', {
         method: 'GET'
     })).json();
     tasksList = response;
@@ -30,7 +30,7 @@ updateValue = (e) => {
 }
 addTask = async () => {
     if (inputValue.trim() && !beingEdited) {
-        const resp = await fetch('http://localhost:4000/task', {
+        const resp = await fetch('https://todo-back-mp.herokuapp.com/task', {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json;charset=utf-8',
@@ -48,7 +48,7 @@ addTask = async () => {
         // localStorage.setItem('list',JSON.stringify(tasksList));
         render();
     } else if (inputValue.trim() && beingEdited) {
-        const response = await fetch(`http://localhost:4000/task/${editID}`, {
+        const response = await fetch(`https://todo-back-mp.herokuapp.com/task/${editID}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8',
@@ -137,7 +137,7 @@ onChangeCheckbox = async (id) => {
     tasksList[id].isChecked = !tasksList[id].isChecked;
     // localStorage.setItem('list',JSON.stringify(tasksList));
 
-    const response = await fetch(`http://localhost:4000/task/${tasksList[id]._id}`, {
+    const response = await fetch(`https://todo-back-mp.herokuapp.com/task/${tasksList[id]._id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json;charset=utf-8',
@@ -159,7 +159,7 @@ editTask = (id) => {
     input.focus();
 }
 removeTask = async (id) => {
-    const response = await fetch(`http://localhost:4000/task/${id}`, {
+    const response = await fetch(`https://todo-back-mp.herokuapp.com/task/${id}`, {
         method: 'DELETE'
     });
     let result = await response.json();
@@ -168,7 +168,7 @@ removeTask = async (id) => {
     render();
 }
 clearAllTasks = async () => {
-    const response = await fetch(`http://localhost:4000/task`, {
+    const response = await fetch(`https://todo-back-mp.herokuapp.com/task`, {
         method: 'DELETE'
     });
     let result = await response.json();
