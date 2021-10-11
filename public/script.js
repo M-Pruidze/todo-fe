@@ -171,7 +171,8 @@ clearAllTasks = async () => {
     const response = await fetch(`https://todo-back-mp.herokuapp.com/task`, {
         method: 'DELETE'
     });
-    tasksList = [];    // let result = await response.json();
+    tasksList = [];    
+    // let result = await response.json();
 
     // localStorage.setItem('list',JSON.stringify(tasksList));
     render();
